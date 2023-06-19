@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+<body>
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <a class="navbar-brand" href="#">Registro de clientes
+        <a>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           th:href="@{/clientes}">Registro de clientes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+</nav>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card">
+            <h1 class="text-center">Editar clientes<h1>
+                <div class="card-body">
+                    <form th:action="@{/clientes/{id}(id=${cliente.documento})}" th:object="${cliente}" method="POST">
+                        <br>
+                        <div class="form-group">
+                            <label>Nombre:</label>
+                            <input placeholder="Ingrese el nombre" type="text" name="nombre" th:field="*{nombre}" class="form-control" required>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label>Apellido:</label>
+                            <input placeholder="Ingrese el apellido" type="text" name="apellido" th:field="*{apellido}" class="form-control" required>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label>Correo:</label>
+                            <input placeholder="Ingrese el correo" type="text" name="correo" th:field="*{correo}" class="form-control" required>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label>Direccion:</label>
+                            <input placeholder="Ingrese el direccion" type="text" name="direccion" th:field="*{direccion}" class="form-control" >
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label>Telefono:</label>
+                            <input placeholder="Ingrese el telefeno" type="text" name="telefono" th:field="*{telefono}" class="form-control" required>
+                        </div>
+                        <div class="box-footer">
+                            <button class="btn btn-success">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+</body>
+</html>

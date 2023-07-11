@@ -33,20 +33,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/login", "/usuarios**", "/usuarios/modificar/1005873748", "/usuarios/1005873748","/crearUsuario",
-                        "/crear_usuarios","/usuarios/crear").permitAll()
-                .antMatchers("/clientes").hasRole("USER")
-                .antMatchers("/clientes").not().hasRole("ADMIN")
+                .antMatchers("/login").permitAll()
+                .antMatchers("/clientes","/crearFactura","/facturas/crear").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers("/facturas","/usuarios/modificar/**","/usuarios/crear","/facturas/modificar/").access("hasRole('ADMIN')")
+                .antMatchers("/logout").authenticated()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/login")
-                .defaultSuccessUrl("/facturas")
+                .defaultSuccessUrl("/clientes")
                 .and()
                 .logout()
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
-                .invalidateHttpSession(true);
+                .invalidateHttpSession(true)
+                .and()
+                .csrf()
+                .disable();
+
     }
 
     @Bean

@@ -24,6 +24,11 @@ public class OdontoRepositorio implements odontoRepository {
         String SQL = "SELECT * FROM cliente WHERE documento = ?";
         return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Cliente.class), documento);
     }
+    @Override
+    public List<Cliente> findAllClienteByNombre(String nombre) {
+        String SQL = "SELECT * FROM cliente WHERE nombre = ?";
+        return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Cliente.class), nombre);
+    }
 
 
     @Override
@@ -65,6 +70,17 @@ public class OdontoRepositorio implements odontoRepository {
         return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Factura.class),fecha1,fecha2);
     }
 
+    @Override
+    public Factura findAllFacturaByFechaHora(String fecha) {
+        String SQL = "SELECT * FROM factura WHERE fecha = ?";
+        List<Factura> facturas = jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Factura.class), fecha);
+
+        if (facturas.isEmpty()) {
+            return null; // No se encontró ningún usuario con el correo electrónico especificado
+        } else {
+            return facturas.get(0); // Devuelve el primer usuario encontrado
+        }
+    }
 
 
     @Override

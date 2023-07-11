@@ -10,6 +10,9 @@ public interface odontoRepository {
     List<Cliente> findAllClientes();
 
     public List <Cliente> findAllCliente(int documento);
+
+    List<Cliente> findAllClienteByNombre(String nombre);
+
     public int saveCliente(Cliente cliente);
     public int updateCliente(Cliente cliente);
     public int deleteCliente(int id);
@@ -19,7 +22,7 @@ public interface odontoRepository {
 
     public List<Factura> findAllFactura(int documento);
     public List<Factura> findAllFacturaByFecha(String fecha, String fecha2);
-
+    public Factura findAllFacturaByFechaHora(String fecha);
 
 
     int saveFactura(Factura factura);

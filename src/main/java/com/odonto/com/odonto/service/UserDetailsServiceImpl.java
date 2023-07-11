@@ -38,7 +38,7 @@ public class UserDetailsServiceImpl implements UserDetailsService{
 
         // Agregar los roles y permisos del usuario a la lista de authorities
         // Puedes consultar tu base de datos o utilizar lógica personalizada para obtener las autoridades
-        if(usuario.getId_vendedor() >= 200){
+        if(usuario.getId_vendedor() > 200){
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
             return authorities;
 

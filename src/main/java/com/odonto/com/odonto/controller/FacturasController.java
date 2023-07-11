@@ -10,16 +10,22 @@ import com.odonto.com.odonto.modelos.Usuario;
 import com.odonto.com.odonto.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.net.URL;
 import com.itextpdf.text.pdf.PdfPTable;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+import org.springframework.web.servlet.view.RedirectView;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
@@ -28,10 +34,15 @@ public class FacturasController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private ClienteController clienteController;
     @GetMapping("/facturas/pdf/{id}")
-    public String generarFacturaPDF(@PathVariable("id") int facturaId, HttpServletResponse response) throws IOException {
+    public void generarFacturaPDF(@PathVariable("id") int facturaId, HttpServletResponse response, Model modelo) throws IOException {
         List<Factura> factura= usuarioService.findAllFactura(facturaId);
         Factura factura1 = factura.get(0);
+        LocalTime horaActual = LocalTime.now();
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String horaFormateada = horaActual.format(formato);
         Document document = new Document();
 
 
@@ -105,8 +116,8 @@ public class FacturasController {
             addCell(table, "Odontologo(a):", fontHeader, BaseColor.WHITE);
             addCell(table, factura1.getNombreVendedor(), fontData, BaseColor.WHITE);
 
-            addCell(table, "ID Odontologo(a):", fontHeader, BaseColor.WHITE);
-            addCell(table, String.valueOf(factura1.getId_vendedor()), fontData, BaseColor.WHITE);
+            addCell(table, "Hora:", fontHeader, BaseColor.WHITE);
+            addCell(table, String.valueOf(horaFormateada), fontData, BaseColor.WHITE);
 
             addCell(table, "Fecha:", fontHeader, BaseColor.WHITE);
             addCell(table, factura1.getFecha().toString(), fontData, BaseColor.WHITE);
@@ -122,30 +133,23 @@ public class FacturasController {
             lineSeparator.setPercentage(100);
             document.add(lineSeparator);
 
-            document.add(Chunk.NEWLINE);
-            document.add(Chunk.NEWLINE);
+
 
             document.add(new Paragraph("Comprometidos con tu SALUD ORAL"));
             document.add(new Paragraph("CITAS -3053272575 -3182821808"));
             document.add(new Paragraph("carrera 39 # 19-20 nuevo Alvernia, Tulua 763021"));
 
             document.add(Chunk.NEWLINE);
-            document.add(Chunk.NEWLINE);
+
             document.add(new Paragraph("Firma:"));
 
 
 
-
         } catch (DocumentException e) {
+
             e.printStackTrace();
-            return "redirect:/facturas";
-
-        } finally {
-            // Cerrar el documento
-            document.close();
         }
-        return "redirect:/facturas";
-
+        document.close();
 
     }
     private void addCell(PdfPTable table, String text, Font font, BaseColor backgroundColor) {
@@ -155,4 +159,12 @@ public class FacturasController {
         cell.setPadding(5);
         table.addCell(cell);
     }
+    @GetMapping("/clientes23")
+    public String listarClientes2(Model modelo){
+
+        modelo.addAttribute("clientes",usuarioService.findAllClientes());
+        return "clientes";
+
+    }
+
 }

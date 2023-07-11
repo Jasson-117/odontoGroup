@@ -59,6 +59,17 @@ public class UsuarioService implements odontoService {
         }
         return list;
     }
+    @Override
+    public List<Cliente> findAllClienteByNombre(String nombre) {
+        List<Cliente> list;
+        try {
+            list = odontoRepository.findAllClienteByNombre(nombre);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
 
     @Override
     public int saveCliente(Cliente cliente) {
@@ -160,7 +171,30 @@ public class UsuarioService implements odontoService {
         }catch (Exception ex){
             throw ex;
         }
-        return row;       }
+        return row;
+    }
+
+    @Override
+    public Factura findAllFacturaByFecha(String fecha) {
+        return null;
+    }
+
+    @Override
+    public Factura findAllFacturaByFechaHora(String fecha) {
+        return null;
+   }
+
+    @Override
+    public Factura findAllFacturaByFecha2(String fecha) {
+        Factura list;
+        try {
+            list = odontoRepository.findAllFacturaByFechaHora(fecha);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;      }
+
     //=========================================================================USUARIOS=============================
 
     @Override

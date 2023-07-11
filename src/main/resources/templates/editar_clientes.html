@@ -3,11 +3,21 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Editar cliente</title>
+    <style>
+        body {
+            font-weight: bold;
+            max-height: 100%;
+            background-image: url('https://i.postimg.cc/hv5jqtNs/Capturada.png');
+            background-position: center;
+            background-size: unset;
+            background-repeat: repeat;
+        }
+    </style>
 </head>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
-<body>
+<body style="font-weight: bold;max-height: 100%">
 <nav class="navbar navbar-expand-md bg-dark navbar-dark">
     <a class="navbar-brand" href="#">Registro de clientes
         <a>
@@ -24,7 +34,7 @@
 <br>
 <div class="container">
     <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card">
+        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card" style="background: rgba(255, 255, 255, 0.8); font-weight: bold">
             <h1 class="text-center">Editar clientes<h1>
                 <div class="card-body">
                     <form th:action="@{/clientes/{id}(id=${cliente.documento})}" th:object="${cliente}" method="POST">

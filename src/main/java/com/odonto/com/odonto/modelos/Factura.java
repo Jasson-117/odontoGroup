@@ -8,10 +8,10 @@ import java.sql.Date;
 public class Factura {
    int factura_id;
    String prospecto;
-   int id_cliente;
+   Integer id_cliente;
    String nombreCliente;
    String  nombreVendedor;
-    int id_vendedor;
-    Date fecha;
+    Integer id_vendedor;
+    String fecha;
     double total;
 }

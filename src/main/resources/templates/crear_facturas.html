@@ -3,11 +3,21 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Crear facturas</title>
+    <style>
+        body {
+            font-weight: bold;
+            max-height: 100%;
+            background-image: url('https://i.postimg.cc/hv5jqtNs/Capturada.png');
+            background-position: center;
+            background-size: unset;
+            background-repeat: repeat;
+        }
+    </style>
 </head>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
-<body>
+<body style="font-weight: bold;max-height: 100%">
 <nav class="navbar navbar-expand-md bg-dark navbar-dark" style="padding-left: 80px">
     <a class="navbar-brand" th:href="@{/facturas}">Registro de facturas
         <a>
@@ -15,26 +25,40 @@
                 <ul class="navbar-nav">
 
                     <li class="nav-item">
-                        <a class="nav-link"
+                        <a class="nav-link" style="width: 200px"
                            th:href="@{/clientes}">Registro de clientes
                         </a>
                     </li>
 
-                    <li class="nav-item" style="padding-left: 900px">
-                        <a class="nav-link"
+                    <li class="nav-item" style="padding-left: 700px">
+                        <a class="nav-link" style="width: 200px"
                            th:href="@{/usuarios/crear}">Registro de usuarios
                         </a>
                     </li>
                 </ul>
             </div>
-</nav>
+ </nav>
 <br>
 <div class="container">
     <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card">
-            <h1 class="text-center">crear facturas<h1>
+        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card" style="background: rgba(255, 255, 255, 0.8); font-weight: bold">
+            <br><br>
+            <h1 style="text-align: left;">Crear registro<h1>
+
                 <div class="card-body">
                     <form th:action="@{/crearFactura}" th:object="${factura}" method="POST">
+
+                        <div th:if="${param.exito}">
+                            <div class="alert alert-info">
+                                Factura creada exitosamente
+                            </div>
+                        </div>
+
+                        <div th:if="${param.error}">
+                            <div class="alert alert-danger">
+                                Documento del cliente o vendedor invalido
+                            </div>
+                        </div>
                         <br>
                         <div class="form-group">
                             <label>prospecto:</label>
@@ -42,9 +66,10 @@
                         </div>
                         <br>
                         <div class="form-group">
-                            <label>id_cliente:</label>
-                            <input placeholder="Ingrese el id_cliente" type="text" name="id_cliente" th:field="*{id_cliente}" class="form-control" required>
+                            <label>Documento cliente:</label>
+                            <input placeholder="Ingrese el Documento" type="text" name="id_cliente" th:field="*{id_cliente}" class="form-control" required>
                         </div>
+
                         <br>
                         <div class="form-group">
                             <label>nombreCliente:</label>
@@ -52,33 +77,71 @@
                         </div>
                         <br>
                         <div class="form-group">
-                            <label>nombreVendedor:</label>
+                            <label>Odontologo(a):</label>
                             <input placeholder="Ingrese el nombreVendedor" type="text" name="nombreVendedor" th:field="*{nombreVendedor}" class="form-control" >
                         </div>
                         <br>
                         <div class="form-group">
-                            <label>id_vendedor:</label>
-                            <input placeholder="Ingrese el id_vendedor" type="text" name="id_vendedor" th:field="*{id_vendedor}" class="form-control" required>
+                            <label>Documento vendedor:</label>
+                            <input placeholder="Ingrese el Documento" type="text" value=" " name="id_vendedor" th:field="*{id_vendedor}" class="form-control" required>
                         </div>
-                        <div class="form-group">
-                            <label>fecha:</label>
-                            <input placeholder="Ingrese la fecha" type="date" name="fecha" th:field="*{fecha}" class="form-control" required>
-                        </div>
+
                         <div class="form-group">
                             <label>total:</label>
                             <input placeholder="Ingrese el total" type="number" name="total" th:field="*{total}" class="form-control" required>
                         </div>
                         <div class="box-footer">
-                            <button class="btn btn-success">Guardar</button>
+                            <button id="guardarBtn" class="btn btn-success">Guardar</button>
                         </div>
+
                     </form>
                 </div>
 
-        </div>
+          </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+<script>
+    document.getElementById("guardarBtn").addEventListener("click", function(event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado del botón
 
+        var form = document.querySelector("form"); // Obtener el formulario
+        var formData = new FormData(form);
+
+        // Realizar una petición POST al endpoint para guardar la factura
+        fetch("/crearFactura", {
+            method: "POST",
+            body: formData
+        })
+            .then(function(response) {
+                // Verificar el estado de la respuesta
+                if (response.ok) {
+                    // Descargar el PDF
+                    return response.blob();
+                } else {
+                    throw new Error("Error al guardar la factura");
+                }
+            })
+            .then(function(blob) {
+                // Crear un enlace temporal para descargar el PDF
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement("a");
+                link.href = url;
+                link.target = "_blank";
+                link.download = "factura.pdf"; // Puedes establecer el nombre del archivo aquí si es necesario
+                link.click();
+
+                // Redirigir al usuario a /clientes
+                window.location.href = "/facturas/crear?exito";
+            })
+            .catch(function(error) {
+                console.error(error);
+                window.location.href = "/facturas/crear?error";
+
+                // Manejar el error aquí si es necesario
+            });
+    });
+</script>
 </body>
 </html>

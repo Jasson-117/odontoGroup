@@ -14,6 +14,8 @@ public interface odontoService extends UserDetailsService {
 
     List<Cliente> findAllCliente(int documento);
 
+    List<Cliente> findAllClienteByNombre(String nombre);
+
     public int saveCliente(Cliente cliente);
     public int updateCliente(Cliente cliente);
     public int deleteCliente(int id);
@@ -27,6 +29,13 @@ public interface odontoService extends UserDetailsService {
     public int saveFactura(Factura factura);
     public int updateFactura(Factura factura);
     public int deleteFactura(int id);
+
+    Factura findAllFacturaByFecha(String fecha);
+
+    Factura findAllFacturaByFechaHora(String fecha);
+
+    Factura findAllFacturaByFecha2(String fecha);
+
     //=================================================0
     List<Usuario> findAllUsuario(int documento);
     public int updateUsuario(Usuario usuario);

@@ -67,7 +67,7 @@ public class FacturasController {
             logo.scaleToFit(200, 200); // Ajusta el tamaño del logo según tus necesidades
             // Agregar el título*/
 
-            Image logo = Image.getInstance("classpath:img/logo.jpg");
+            Image logo = Image.getInstance("classpath:templates/logo.jpg");
             logo.scaleToFit(200, 200);
             Paragraph title = new Paragraph("Grupo Odontologico Las Palmas", fontTitle);
 
@@ -124,6 +124,9 @@ public class FacturasController {
 
             addCell(table, "Total:", fontHeader, BaseColor.WHITE);
             addCell(table, String.valueOf(factura1.getTotal()), fontData, BaseColor.WHITE);
+
+            addCell(table, "Saldo:", fontHeader, BaseColor.WHITE);
+            addCell(table, String.valueOf(factura1.getSaldo()), fontData, BaseColor.WHITE);
 
             document.add(table);
             document.add(new Paragraph("\n"));

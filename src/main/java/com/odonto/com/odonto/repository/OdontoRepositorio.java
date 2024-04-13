@@ -1,8 +1,6 @@
 package com.odonto.com.odonto.repository;
 
-import com.odonto.com.odonto.modelos.Cliente;
-import com.odonto.com.odonto.modelos.Factura;
-import com.odonto.com.odonto.modelos.Usuario;
+import com.odonto.com.odonto.modelos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -69,6 +67,11 @@ public class OdontoRepositorio implements odontoRepository {
         String SQL = "SELECT * FROM factura WHERE fecha BETWEEN ? AND ?";
         return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Factura.class),fecha1,fecha2);
     }
+    @Override
+    public List<Factura> findAllFacturaByCedula(int documento) {
+        String SQL = "SELECT * FROM factura WHERE id_cliente = ?";
+        return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Factura.class),documento);
+    }
 
     @Override
     public Factura findAllFacturaByFechaHora(String fecha) {
@@ -85,16 +88,16 @@ public class OdontoRepositorio implements odontoRepository {
 
     @Override
     public int saveFactura(Factura factura) {
-        String SQL = "INSERT INTO factura VALUES(?,?,?,?,?,?,?)";
+        String SQL = "INSERT INTO factura (prospecto, id_cliente, nombreCliente, nombreVendedor, id_vendedor, fecha, total, saldo) VALUES(?,?,?,?,?,?,?,?)";
         return jdbcTemplate.update(SQL, new Object[]{factura.getProspecto(),factura.getId_cliente(),factura.getNombreCliente(),
-                factura.getNombreVendedor(),factura.getId_vendedor(),factura.getFecha(),factura.getTotal()});
+                factura.getNombreVendedor(),factura.getId_vendedor(),factura.getFecha(),factura.getTotal(),factura.getSaldo()});
     }
 
     @Override
     public int updateFactura(Factura factura) {
-        String SQL = "UPDATE factura SET prospecto=?, id_cliente=?, nombreCliente=?, nombreVendedor=?, id_vendedor=?, fecha=?, total=? WHERE factura_id=?";
+        String SQL = "UPDATE factura SET prospecto=?, id_cliente=?, nombreCliente=?, nombreVendedor=?, id_vendedor=?, fecha=?, total=?,saldo=? WHERE factura_id=?";
         return jdbcTemplate.update(SQL, new Object[]{factura.getProspecto(),factura.getId_cliente(),factura.getNombreCliente(),
-                factura.getNombreVendedor(),factura.getId_vendedor(),factura.getFecha(),factura.getTotal(),factura.getFactura_id()});
+                factura.getNombreVendedor(),factura.getId_vendedor(),factura.getFecha(),factura.getTotal(),factura.getSaldo(),factura.getFactura_id()});
     }
     @Override
     public int deleteFactura(int id) {
@@ -149,6 +152,72 @@ public class OdontoRepositorio implements odontoRepository {
         } else {
             return usuarios.get(0); // Devuelve el primer usuario encontrado
         }    }
+    @Override
+    public int deleteUsuario(int id) {
+        String SQL = "DELETE FROM usuario WHERE documento=?";
+        return jdbcTemplate.update(SQL, new Object[]{id});
+    }
+    @Override
+    public List<Usuario> findAllUsuarios() {
+        String SQL = "SELECT * FROM usuario";
+        return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Usuario.class));
+    }
+    @Override
+    public Double calcularSaldoTotalCliente(int clienteId) {
+        String SQL = "SELECT SUM(saldo) FROM factura WHERE id_cliente = ?";
+        return jdbcTemplate.queryForObject(SQL, new Object[] { clienteId }, Double.class);
+    }
 
+    //================================================HISTORIALES============================================================
+
+    @Override
+    public List<Historial> findHistorial(int documento) {
+        String SQL = "SELECT * FROM historial_medico WHERE id_cliente = ?";
+        return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Historial.class), documento);
+    }
+    @Override
+    public int saveHistorial(Historial historial) {
+        String SQL = "INSERT INTO historial_medico (id_cliente, fecha, tipo_identificacion, motivo_de_consulta, origen_de_la_enfermedad, historia_de_enfermedad_actual, antecedentes_de_importancia, observaciones, impresion_diagnostica, valoracion_especialista, image) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+        return jdbcTemplate.update(SQL, new Object[]{historial.getIdCliente(),historial.getFecha(),historial.getTipoIdentificacion(),
+                historial.getMotivoDeConsulta(),historial.getOrigenDeLaEnfermedad(),historial.getHistoriaDeEnfermedadActual(),historial.getAntecedentesDeImportancia(),historial.getObservaciones(),historial.getImpresionDiagnostica(),historial.getValoracionEspecialista(),historial.getImagen()});
+
+    }
+    @Override
+    public int updateHistorial(Historial historial) {
+        String SQL = "UPDATE historial_medico " +
+                "SET  tipo_identificacion = ?, motivo_de_consulta = ?, " +
+                "origen_de_la_enfermedad = ?, historia_de_enfermedad_actual = ?, " +
+                "antecedentes_de_importancia = ?, observaciones = ?, " +
+                "impresion_diagnostica = ?, valoracion_especialista = ?, " +
+                "image = ?"+
+                "WHERE id_cliente = ?";
+        return jdbcTemplate.update(SQL, new Object[]{historial.getTipoIdentificacion(), historial.getMotivoDeConsulta(), historial.getOrigenDeLaEnfermedad(), historial.getHistoriaDeEnfermedadActual(), historial.getAntecedentesDeImportancia(), historial.getObservaciones(), historial.getImpresionDiagnostica(), historial.getValoracionEspecialista(),1006166649});
+
+    }
+  // ===================================================================================================================
+    @Override
+    public List<Observaciones> findObservacion(int documento) {
+        String SQL = "SELECT * FROM observaciones WHERE id_cliente = ?";
+        return jdbcTemplate.query(SQL, BeanPropertyRowMapper.newInstance(Observaciones.class), documento);
+    }
+    @Override
+    public int saveObservacion(Observaciones observaciones) {
+        String SQL = "INSERT INTO observaciones (observacion, fecha, id_cliente) VALUES(?,?,?)";
+        return jdbcTemplate.update(SQL, new Object[]{observaciones.getObservacion(),observaciones.getFecha(),observaciones.getIdCliente()});
+
+    }
+    @Override
+    public int deleteobservaciones(int id) {
+        String SQL = "DELETE FROM observaciones WHERE id_cliente=?";
+        return jdbcTemplate.update(SQL, new Object[]{id});
+    }
+
+
+
+    @Override
+    public List<byte[]> findImageHistorial(int id) {
+        String SQL = "SELECT image FROM historial_medico WHERE id_cliente=?";
+        return jdbcTemplate.query(SQL, new Object[]{id}, (rs, rowNum) -> rs.getBytes("image"));
+    }
 
 }

@@ -63,32 +63,31 @@
           <form th:action="@{/crear_usuarios}" th:object="${usuario}" method="POST">
             <br>
             <div class="form-group">
-              <label>documento:</label>
+              <label>Documento:</label>
               <input placeholder="Ingrese el documento" type="text" name="documento" th:field="*{documento}" class="form-control" required>
             </div>
             <br>
             <div class="form-group">
-              <label>nombre:</label>
+              <label>Nombre:</label>
               <input placeholder="Ingrese el nombre" type="text" name="nombre" th:field="*{nombre}"class="form-control" required>
             </div>
             <br>
+            <div class="alert alert-warning" style="font-size:1rem;" role="alert">
+              Usuarios mayores a 200 no podrán acceder al registro de facturas ni al registro de usuarios.
+            </div>
             <div class="form-group">
-              <label>id_vendedor:</label>
+              <label>Id:</label>
               <input placeholder="Ingrese el id_vendedor" type="text" name="id_vendedor" th:field="*{id_vendedor}" class="form-control" required>
             </div>
             <br>
+
             <div class="form-group">
-              <label>apellido:</label>
-              <input placeholder="Ingrese el apellido" type="text" name="apellido" th:field="*{apellido}" class="form-control" required>
-            </div>
-            <br>
-            <div class="form-group">
-              <label>contraseña:</label>
+              <label>Contraseña:</label>
               <input placeholder="Ingrese el contraseña" type="password" name="contraseña" th:field="*{contraseña}" class="form-control" >
             </div>
             <br>
             <div class="form-group">
-              <label>correo:</label>
+              <label>Correo:</label>
               <input placeholder="Ingrese el correo" type="text" name="correo" th:field="*{correo}" class="form-control" required>
             </div>
             <div class="box-footer">

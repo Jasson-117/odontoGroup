@@ -28,6 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService{
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = odontoRepository.findByEmail(username);
+        System.out.println(usuario);
         if (usuario == null) {
             throw new UsernameNotFoundException("Usuario no encontrado");
         }

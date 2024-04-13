@@ -1,8 +1,6 @@
 package com.odonto.com.odonto.service;
 
-import com.odonto.com.odonto.modelos.Cliente;
-import com.odonto.com.odonto.modelos.Factura;
-import com.odonto.com.odonto.modelos.Usuario;
+import com.odonto.com.odonto.modelos.*;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 
@@ -11,6 +9,8 @@ import java.util.List;
 public interface odontoService extends UserDetailsService {
     public List<Cliente> findAllClientes();
     public List<Cliente> findAllsCliente();
+
+    Double calcularSaldo(int documento);
 
     List<Cliente> findAllCliente(int documento);
 
@@ -48,4 +48,28 @@ public interface odontoService extends UserDetailsService {
     Usuario findAllUsuarioByEmail(String documento);
 
     List<Factura> findAllFacturaByFecha(String fecha1, String fecha2);
+
+    int deleteUsuario(int id);
+
+    List<Usuario> findAllUsuario2s();
+
+    List<Historial> findAllHistorial(int documento);
+
+
+
+    int updateHistorial(Historial historial);
+
+    int saveHistorial(Historial historial);
+
+    List<Observaciones> findAllObservaciones(int documento);
+
+    int saveObservacion(Observaciones observaciones);
+
+    int deleteObservacion(int id);
+
+    Usuario findUserByEmail(String documento);
+
+    List<Factura> findAllFacturasByDocumento(int documento);
+
+    List<byte[]> obtenerImagenPorId(int id);
 }

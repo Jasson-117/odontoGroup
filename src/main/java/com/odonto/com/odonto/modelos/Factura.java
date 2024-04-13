@@ -13,5 +13,9 @@ public class Factura {
    String  nombreVendedor;
     Integer id_vendedor;
     String fecha;
-    double total;
+    Double total;
+    Double saldo;
+     String totalString; // Nueva propiedad para almacenar total formateado
+     String saldoString;
+
 }

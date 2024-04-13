@@ -1,43 +1,75 @@
 package com.odonto.com.odonto;
 
+import com.odonto.com.odonto.modelos.Historial;
+import com.odonto.com.odonto.repository.OdontoRepositorio;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.ApplicationContext;
 
-import com.odonto.com.odonto.controller.ClienteController;
-import com.odonto.com.odonto.modelos.Cliente;
-import com.odonto.com.odonto.modelos.Factura;
-import com.odonto.com.odonto.modelos.Usuario;
 import com.odonto.com.odonto.service.UserDetailsServiceImpl;
 import com.odonto.com.odonto.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 @SpringBootApplication
-public class Application implements CommandLineRunner {
-	private final ClienteController clienteController;
-	@Autowired
-	private UserDetailsServiceImpl usuarioService;
-	@Autowired
-	private UsuarioService usuarioService2;
+public class Application extends SpringBootServletInitializer {
 
-	public Application(ClienteController clienteController) {
-		this.clienteController = clienteController;
+	private final UserDetailsServiceImpl usuarioService;
+	private final UsuarioService usuarioService2;
+	private final OdontoRepositorio odontoRepositorio;
+
+	public Application(UserDetailsServiceImpl usuarioService, UsuarioService usuarioService2, OdontoRepositorio odontoRepositorio) {
+		this.usuarioService = usuarioService;
+		this.usuarioService2 = usuarioService2;
+		this.odontoRepositorio = odontoRepositorio;
 	}
+
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		ApplicationContext context = SpringApplication.run(Application.class, args);
+		Application app = context.getBean(Application.class);
+	//	app.calcularSaldo();
 	}
 
+/*	public void calcularSaldo() {
+		List<Historial> historialExistente = usuarioService2.findAllHistorial(1006166649);
 
+		if (!historialExistente.isEmpty()) {
+			Historial primerHistorial = historialExistente.get(0);
+			primerHistorial.setIdCliente(1006166649);
+
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
+
+			try {
+				// Crear un objeto Date a partir de una cadena con formato 'yyyy-MM-dd HH:mm:ss.SSSSSS'
+				Date fecha = dateFormat.parse("2023-10-16 10:30:00.000000");
+				primerHistorial.setFecha("2023-10-16 10:30:00.000000");
+
+				primerHistorial.setTipoIdentificacion("DNI");
+				primerHistorial.setMotivoDeConsulta("Dolo muelas");
+				primerHistorial.setOrigenDeLaEnfermedad("historial.gLaEnfermedad()");
+				primerHistorial.setAntecedentesDeImportancia("histordentesDeImportancia()");
+				primerHistorial.setObservaciones("historiarvaciones()");
+				primerHistorial.setImpresionDiagnostica("historialnDiagnostica()");
+				primerHistorial.setValoracionEspecialista("historial.gialista()");
+
+				// Actualizar el historial con la fecha formateada
+				odontoRepositorio.updateHistorial(primerHistorial);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				// Manejar la excepción si ocurre un error al analizar la fecha
+			}
+		}
+		System.out.println("El saldo calculado es: " + historialExistente);
+	}
+
+*/
 	@Override
-	public void run(String... args) throws Exception {
-		System.out.println(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-
-		Factura factura = usuarioService2.findAllFacturaByFecha2("2023-06-23 20:04:09");
-		System.out.println(factura);
-
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+		return applicationBuilder.sources(Application.class);
 	}
 }

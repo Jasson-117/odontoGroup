@@ -1,9 +1,6 @@
 package com.odonto.com.odonto.service;
 
-import com.odonto.com.odonto.modelos.Cliente;
-import com.odonto.com.odonto.modelos.Factura;
-import com.odonto.com.odonto.modelos.Rol;
-import com.odonto.com.odonto.modelos.Usuario;
+import com.odonto.com.odonto.modelos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,6 +38,18 @@ public class UsuarioService implements odontoService {
         List<Cliente> list;
         try {
             list = odontoRepository.findAllClientes();
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
+    @Override
+    public Double calcularSaldo(int documento) {
+
+        Double list;
+        try {
+            list = odontoRepository.calcularSaldoTotalCliente(documento);
 
         }catch (Exception ex){
             throw ex;
@@ -270,5 +279,127 @@ public class UsuarioService implements odontoService {
             throw ex;
         }
         return list;       }
+    @Override
+    public int deleteUsuario(int id) {
+        int row;
+        try {
+            row = odontoRepository.deleteUsuario(id);
 
+        }catch (Exception ex){
+            throw ex;
+        }
+        return row;
+    }
+    @Override
+    public List<Usuario> findAllUsuario2s() {
+        List<Usuario> list;
+        try {
+            list = odontoRepository.findAllUsuarios();
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
+    @Override
+    public List<Historial> findAllHistorial(int documento) {
+        List<Historial> list;
+        try {
+            list = odontoRepository.findHistorial(documento);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
+
+
+
+    @Override
+    public int updateHistorial(Historial historial) {
+        int row;
+        try {
+            row = odontoRepository.updateHistorial(historial);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return row;       }
+    @Override
+    public int saveHistorial(Historial historial) {
+        int row;
+        try {
+            row = odontoRepository.saveHistorial(historial);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return row;
+    }
+    @Override
+    public List<Observaciones> findAllObservaciones(int documento) {
+        List<Observaciones> list;
+        try {
+            list = odontoRepository.findObservacion(documento);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
+    @Override
+    public int saveObservacion(Observaciones observaciones) {
+        int row;
+        try {
+            row = odontoRepository.saveObservacion(observaciones);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return row;
+    }
+    @Override
+    public int deleteObservacion(int id) {
+        int row;
+        try {
+            row = odontoRepository.deleteobservaciones(id);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return row;
+    }
+    @Override
+    public Usuario findUserByEmail(String email) {
+        Usuario list;
+        try {
+            list = odontoRepository.findByEmail(email);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
+    @Override
+    public List<Factura> findAllFacturasByDocumento(int documento) {
+        List<Factura> list;
+        try {
+            list = odontoRepository.findAllFacturaByCedula(documento);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return list;
+    }
+    @Override
+    public List<byte[]> obtenerImagenPorId(int id) {
+        List<byte[]> row;
+        try {
+            row = odontoRepository.findImageHistorial(id);
+
+        }catch (Exception ex){
+            throw ex;
+        }
+        return row;
+    }
 }

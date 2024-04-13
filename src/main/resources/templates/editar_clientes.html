@@ -34,7 +34,7 @@
 <br>
 <div class="container">
     <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card" style="background: rgba(255, 255, 255, 0.8); font-weight: bold">
+        <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card" style="background: rgba(255, 255, 255, 0.8); font-weight: bold; box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2); font-weight: bold">
             <h1 class="text-center">Editar clientes<h1>
                 <div class="card-body">
                     <form th:action="@{/clientes/{id}(id=${cliente.documento})}" th:object="${cliente}" method="POST">
@@ -53,11 +53,7 @@
                             <label>Correo:</label>
                             <input placeholder="Ingrese el correo" type="text" name="correo" th:field="*{correo}" class="form-control" required>
                         </div>
-                        <br>
-                        <div class="form-group">
-                            <label>Direccion:</label>
-                            <input placeholder="Ingrese el direccion" type="text" name="direccion" th:field="*{direccion}" class="form-control" >
-                        </div>
+
                         <br>
                         <div class="form-group">
                             <label>Telefono:</label>

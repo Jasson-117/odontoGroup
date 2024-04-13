@@ -32,18 +32,18 @@
 
                     <li class="nav-item" style="padding-left: 700px">
                         <a class="nav-link" style="width: 200px"
-                           th:href="@{/usuarios/crear}">Registro de usuarios
+                           th:href="@{/usuarios}">Registro de usuarios
                         </a>
                     </li>
                 </ul>
             </div>
- </nav>
+</nav>
 <br>
 <div class="container">
     <div class="row">
         <div class="col-lg-6 col-md-6 col-sm-6 container justify-content-center card" style="background: rgba(255, 255, 255, 0.8); font-weight: bold">
             <br><br>
-            <h1 style="text-align: left;">Crear registro<h1>
+            <h1 style="text-align: left;">Crear registros<h1>
 
                 <div class="card-body">
                     <form th:action="@{/crearFactura}" th:object="${factura}" method="POST">
@@ -61,7 +61,7 @@
                         </div>
                         <br>
                         <div class="form-group">
-                            <label>prospecto:</label>
+                            <label>Concepto:</label>
                             <input placeholder="Ingrese el prospecto" type="text" name="prospecto" th:field="*{prospecto}" class="form-control" required>
                         </div>
                         <br>
@@ -71,38 +71,93 @@
                         </div>
 
                         <br>
-                        <div class="form-group">
-                            <label>nombreCliente:</label>
-                            <input placeholder="Ingrese el nombreCliente" type="text" name="nombreCliente" th:field="*{nombreCliente}" class="form-control" required>
-                        </div>
-                        <br>
-                        <div class="form-group">
-                            <label>Odontologo(a):</label>
-                            <input placeholder="Ingrese el nombreVendedor" type="text" name="nombreVendedor" th:field="*{nombreVendedor}" class="form-control" >
-                        </div>
-                        <br>
-                        <div class="form-group">
-                            <label>Documento vendedor:</label>
-                            <input placeholder="Ingrese el Documento" type="text" value=" " name="id_vendedor" th:field="*{id_vendedor}" class="form-control" required>
-                        </div>
 
                         <div class="form-group">
-                            <label>total:</label>
+                            <label>Documento odontologo:</label>
+                            <input placeholder="Ingrese el Documento" type="number" name="id_vendedor" th:field="*{id_vendedor}" class="form-control" required>
+                        </div>
+
+                        <br>
+
+
+
+                        <div class="form-group">
+                            <label>Total:</label>
                             <input placeholder="Ingrese el total" type="number" name="total" th:field="*{total}" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Saldo:</label>
+                            <input placeholder="Ingrese el saldo" type="number" name="total" th:field="*{saldo}" class="form-control" required>
                         </div>
                         <div class="box-footer">
                             <button id="guardarBtn" class="btn btn-success">Guardar</button>
+                            <button id="enviarIdClienteBtn" class="btn btn-primary" type="button">Calcular saldo</button>
+
                         </div>
 
                     </form>
                 </div>
-
-          </div>
+         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 <script>
+    // ...
+    document.addEventListener("DOMContentLoaded", function() {
+        // Comprobar si hay datos guardados en el almacenamiento local
+        var savedData = localStorage.getItem("formData");
+        var params = new URLSearchParams(window.location.search);
+        if (savedData && params.has("error") && params.get("error") === "true") {
+            // Obtener los datos guardados y convertirlos de JSON a un objeto
+            // Obtener los datos guardados y convertirlos de JSON a un objeto
+            savedData = JSON.parse(savedData);
+
+            // Llenar los campos del formulario con los datos guardados
+            document.querySelector("input[name='prospecto']").value = savedData.prospecto;
+            document.querySelector("input[name='id_cliente']").value = savedData.id_cliente;
+            document.querySelector("input[name='total']").value = savedData.total;
+            document.querySelector("input[name='saldo']").value = savedData.saldo;
+            // Continuar llenando otros campos según sea necesario
+        }
+    });
+
+    document.getElementById("enviarIdClienteBtn").addEventListener("click", function(event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado del botón
+
+        var form = document.querySelector("form"); // Obtener el formulario
+        var formData = new FormData(form);
+
+        // Remueve campos no deseados (por ejemplo, total y saldo)
+
+        // Realizar una petición POST al nuevo endpoint
+        fetch("/facturas/crear2", {
+            method: "POST",
+            body: formData
+        })
+            .then(function(response) {
+                if (response.ok) {
+                    // La solicitud se completó correctamente
+                    return response.json(); // Parsea la respuesta como JSON
+                } else {
+                    throw new Error("Error al enviar el ID del cliente.");
+                }
+            })
+            .then(function(data) {
+                console.log("ID del cliente enviado exitosamente.");
+                // Actualiza el campo de saldo en el formulario con el valor recibido
+                document.querySelector("input[name='total']").value = data.saldo;
+                // Agrega aquí cualquier acción adicional que desees realizar.
+            })
+            .catch(function(error) {
+                console.error(error);
+                // Manejar el error aquí si es necesario
+            });
+    });
+
+    // ...
+
+
     document.getElementById("guardarBtn").addEventListener("click", function(event) {
         event.preventDefault(); // Evitar el comportamiento predeterminado del botón
 
@@ -133,11 +188,23 @@
                 link.click();
 
                 // Redirigir al usuario a /clientes
-                window.location.href = "/facturas/crear?exito";
+                window.location.href = "/facturas/crear?exito=true";
             })
             .catch(function(error) {
                 console.error(error);
-                window.location.href = "/facturas/crear?error";
+                var formDataToSave = {
+                    prospecto: document.querySelector("input[name='prospecto']").value,
+                    id_cliente: document.querySelector("input[name='id_cliente']").value,
+                    id_vendedor: document.querySelector("input[name='id_vendedor']").value,
+
+                    total: document.querySelector("input[name='total']").value,
+                    saldo: document.querySelector("input[name='saldo']").value,
+                    // Continuar con otros campos si es necesario
+                };
+                localStorage.setItem("formData", JSON.stringify(formDataToSave));
+
+
+                window.location.href = "/facturas/crear?error=true";
 
                 // Manejar el error aquí si es necesario
             });

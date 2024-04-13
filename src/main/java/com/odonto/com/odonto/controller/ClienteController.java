@@ -29,18 +29,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-
+import java.util.*;
 
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
+
 @Controller
 
 //@RequestMapping("api/registros/")
@@ -54,10 +55,22 @@ public class ClienteController {
     String fechaAnteriorFormateada = fechaAnterior.format(formato2);
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+
     @Autowired
     private UsuarioService usuarioService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    public String obtenerCorreoElectronicoUsuarioActual() {
+        // Obtén el objeto UserDetails del usuario actual
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername(); // Esto retorna el correo electrónico
+        } else {
+            // El usuario no está autenticado o los detalles no son del tipo UserDetails
+            return null;
+        }
+    }
 
     @GetMapping("/list")
     public ResponseEntity<List<Cliente>> list(){
@@ -92,11 +105,13 @@ public class ClienteController {
 
         if (!clienteExistente.isEmpty()) {
             redirectAttributes.addAttribute("error2", true);
-            return "redirect:/clientes/crear";
+            return "redirect:/clientes/crear?error";
         }
-
+        cliente.setCorreo("-");
+        cliente.setDireccion("-");
         usuarioService.saveCliente(cliente);
-        return "redirect:/clientes";
+        redirectAttributes.addAttribute("error3", true);
+        return "redirect:/clientes/crear?exito";
     }
 
     @GetMapping("/clientes/modificar/{id}")
@@ -115,7 +130,7 @@ public class ClienteController {
             primerCliente.setNombre(cliente.getNombre());
             primerCliente.setApellido(cliente.getApellido());
             primerCliente.setCorreo(cliente.getCorreo());
-            primerCliente.setDireccion(cliente.getDireccion());
+            primerCliente.setDireccion("-");
             primerCliente.setTelefono(cliente.getTelefono());
 
 
@@ -132,8 +147,39 @@ public class ClienteController {
         return "redirect:/clientes";
     }
     //===================================================FACTURA===========================================
+
     @GetMapping("/facturas")
     public String listarFacturas(Model modelo) {
+        LocalDateTime fechaActual = LocalDateTime.now();
+        LocalDateTime fechaAnterior = fechaActual.minusDays(1);
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String fechaActualFormateada = fechaActual.format(formato);
+        String fechaAnteriorFormateada = fechaAnterior.format(formato);
+        List<Factura> facturas = usuarioService.findAllFacturaByFecha(fechaAnteriorFormateada, fechaActualFormateada);
+
+        // Formatea los valores de total y saldo como cadenas de texto con separadores de miles y punto decimal
+        DecimalFormatSymbols separadores = new DecimalFormatSymbols(Locale.getDefault());
+        separadores.setGroupingSeparator('.'); // Usa un punto como separador de miles
+        separadores.setDecimalSeparator(','); // Usa una coma como separador decimal
+        DecimalFormat df = new DecimalFormat("#,###.##", separadores);
+
+        for (Factura factura : facturas) {
+            if (factura.getTotal() != null) {
+                factura.setTotalString(df.format(factura.getTotal()));
+            }
+            if (factura.getSaldo() != null) {
+                factura.setSaldoString(df.format(factura.getSaldo()));
+            }
+        }
+
+        modelo.addAttribute("id", "");  // Valor inicial para 'id'
+        modelo.addAttribute("id2", "");
+        modelo.addAttribute("facturas", facturas);
+
+        return "facturas";
+    }
+    @GetMapping("/facturas/buscarPorCedula/{id}")
+    public String listarFacturasPorCedula(Model modelo, @PathVariable("id") int id) {
         LocalDateTime fechaActual = LocalDateTime.now();
         LocalDateTime fechaAnterior = fechaActual.minusDays(1);
         DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -142,7 +188,7 @@ public class ClienteController {
 
         modelo.addAttribute("id", "");  // Valor inicial para 'id'
         modelo.addAttribute("id2", "");
-        modelo.addAttribute("facturas", usuarioService.findAllFacturaByFecha(fechaAnteriorFormateada, fechaActualFormateada));
+        modelo.addAttribute("facturas", usuarioService.findAllFacturasByDocumento(id));
 
         return "facturas";
     }
@@ -162,22 +208,56 @@ public class ClienteController {
         modelo.addAttribute("factura", factura);
         return "crear_facturas";
     }
+    @ResponseBody // Esta anotación indica que el método devuelve JSON
+    @PostMapping("facturas/crear2")
+    public ResponseEntity<Map<String, Double>> mostrarHistorial(@ModelAttribute("factura") Factura factura1) {
+        Double saldoTotal = usuarioService.calcularSaldo(factura1.getId_cliente());
+
+        // Crear un mapa para almacenar el saldo
+        Map<String, Double> response = new HashMap<>();
+        response.put("saldo", saldoTotal);
+
+        return ResponseEntity.ok(response); // Devolver el saldo como JSON
+    }
     @PostMapping("/crearFactura")
     public void CrearFacturas(@ModelAttribute("factura") Factura factura,HttpServletResponse response ) throws IOException {
         List<Cliente> documentoExistente = usuarioService.findAllCliente(factura.getId_cliente());
+        List<Usuario> usuarioExistente = usuarioService.findAllUsuario(factura.getId_vendedor());
 
-        if (documentoExistente.isEmpty()) {
-            response.sendRedirect("/facturas/crear?error2");
+        if (!documentoExistente.isEmpty()) {
+            factura.setNombreCliente(documentoExistente.get(0).getNombre());
+        } else {
+            // Manejar la situación en la que no se encuentra ningún cliente con el ID especificado
+            // Por ejemplo, podrías redirigir al usuario a una página de error o mostrar un mensaje de advertencia
+            response.sendRedirect("/facturas/crear?error23");
         }
+        if (!usuarioExistente.isEmpty()) {
+            factura.setNombreCliente(documentoExistente.get(0).getNombre());
+        } else {
+            // Manejar la situación en la que no se encuentra ningún cliente con el ID especificado
+            // Por ejemplo, podrías redirigir al usuario a una página de error o mostrar un mensaje de advertencia
+            response.sendRedirect("/facturas/crear?error22");
+        }
+        TimeZone timeZone = TimeZone.getTimeZone("America/Bogota");
+
         Date fechaActual = new Date();
         // Crear el formato deseado para la fecha
+
         SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        formatoFecha.setTimeZone(timeZone);
+
         String fechaFormateada = formatoFecha.format(fechaActual);
         factura.setFecha(fechaFormateada);
+
+        factura.setNombreVendedor(usuarioExistente.get(0).getNombre());
+        //Activar estas 2 lineas si se necesita guardar el id del usuario logeado en el momento, en el documento de la factura
+       // Usuario usuarioLogeado = usuarioService.findUserByEmail(obtenerCorreoElectronicoUsuarioActual());
+        // factura.setId_vendedor(usuarioLogeado.getDocumento());
+
         usuarioService.saveFactura(factura);
 
         Factura factura1 = usuarioService.findAllFacturaByFecha2(fechaFormateada);
-        LocalTime horaActual = LocalTime.now();
+        LocalTime horaActual = LocalTime.now(timeZone.toZoneId());
         DateTimeFormatter formato = DateTimeFormatter.ofPattern("HH:mm:ss");
         String horaFormateada = horaActual.format(formato);
         Document document = new Document();
@@ -204,7 +284,7 @@ public class ClienteController {
             // Agregar el título*/
 
             ResourceLoader resourceLoader = new DefaultResourceLoader();
-            Resource resource = resourceLoader.getResource("classpath:img/logo.jpg");
+            Resource resource = resourceLoader.getResource("classpath:templates/logo.jpg");
             byte[] logoBytes = null;
 
             try {
@@ -272,6 +352,9 @@ public class ClienteController {
             addCell(table, "Total:", fontHeader, BaseColor.WHITE);
             addCell(table, String.valueOf(factura1.getTotal()), fontData, BaseColor.WHITE);
 
+            addCell(table, "Saldo:", fontHeader, BaseColor.WHITE);
+            addCell(table, String.valueOf(factura1.getSaldo()), fontData, BaseColor.WHITE);
+
             document.add(table);
             document.add(new Paragraph("\n"));
             LineSeparator lineSeparator = new LineSeparator();
@@ -329,6 +412,8 @@ public class ClienteController {
             primerFactura.setId_vendedor(factura.getId_vendedor());
             primerFactura.setFecha(factura.getFecha());
             primerFactura.setTotal(factura.getTotal());
+            primerFactura.setTotal(factura.getSaldo());
+
 
             usuarioService.updateFactura(primerFactura);
             return "redirect:/facturas";
@@ -390,6 +475,14 @@ public class ClienteController {
 
         return "crear_usuarios";
     }
+    @GetMapping("/usuarios")
+    public String mostrarCrearUsuarios(Model modelo){
+
+
+        modelo.addAttribute("usuario", usuarioService.findAllUsuario2s());
+
+        return "usuarios";
+    }
     @PostMapping("/crear_usuarios")
     public String CrearUsuarios(@ModelAttribute("usuario") Usuario usuario){
         String contraseñaCodificada = passwordEncoder.encode(usuario.getContraseña());
@@ -399,6 +492,22 @@ public class ClienteController {
 
         usuarioService.saveUsuario(usuario1);
         return "redirect:/usuarios/crear?exito";
+    }
+    @GetMapping("/crear_usuarios2")
+    public String CrearUsuarios2(){
+        Usuario usuariok1 = new Usuario(1444221,101,"admin25","esxssio","faraones22","admin6");
+        String contraseñaCodificada = passwordEncoder.encode(usuariok1.getContraseña());
+
+        Usuario usuario1 = new Usuario(usuariok1.getDocumento(),usuariok1.getId_vendedor(),usuariok1.getNombre(),usuariok1.getApellido()
+                ,contraseñaCodificada,usuariok1.getCorreo());
+
+        usuarioService.saveUsuario(usuario1);
+        return "redirect:/index";
+    }
+    @GetMapping("/eliminarUsuarios/{id}")
+    public String EliminarUsuarios(@PathVariable int id) {
+        usuarioService.deleteUsuario(id);
+        return "redirect:/usuarios";
     }
 
     /*
@@ -449,4 +558,106 @@ public class ClienteController {
         }
         return new ResponseEntity<>(serviceResponse,HttpStatus.OK);
     }*/
+@GetMapping("/historial/modificar/{id}")
+public String mostrarModificarHistorial(@PathVariable int id, Model modelo) {
+    List<Historial> historial = usuarioService.findAllHistorial(id);
+
+    Observaciones observaciones = new Observaciones();
+    if (!historial.isEmpty()) {
+        Historial historialEncontrado = historial.get(0);
+        modelo.addAttribute("historial", historialEncontrado);
+        modelo.addAttribute("observaciones1", usuarioService.findAllObservaciones(id));
+        modelo.addAttribute("observaciones", observaciones);
+        List<byte[]> imagenBytesList = usuarioService.obtenerImagenPorId(id);
+
+
+
+
+
+    } else {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Define un formateador para el formato deseado
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+
+        // Formatea la fecha y hora actual en el formato deseado
+        String formattedDateTime = now.format(formatter);
+        Historial historial1 = new Historial();
+        historial1.setTipoIdentificacion(" ");
+        historial1.setMotivoDeConsulta(" ");
+        historial1.setOrigenDeLaEnfermedad(" ");
+        historial1.setAntecedentesDeImportancia(" ");
+        historial1.setObservaciones(" ");
+        historial1.setImpresionDiagnostica(" ");
+        historial1.setValoracionEspecialista(" ");
+        historial1.setHistoriaDeEnfermedadActual(" ");
+        historial1.setFecha(formattedDateTime);
+        historial1.setIdCliente(id);
+        modelo.addAttribute("historial", historial1);
+        return "crear_historial";
+    }
+
+    return "crear_historial";
 }
+
+    @PostMapping("/historial/{id}")
+    public String ModificarHistorial(@PathVariable int id, @ModelAttribute("historial") Historial historial, Model modelo) {
+        try {
+            List<Historial> historialExistente = usuarioService.findAllHistorial(id);
+            if (!historialExistente.isEmpty()) {
+                Historial primerHistorial = historialExistente.get(0);
+
+
+                primerHistorial.setTipoIdentificacion(historial.getTipoIdentificacion());
+                primerHistorial.setMotivoDeConsulta(historial.getMotivoDeConsulta());
+                primerHistorial.setOrigenDeLaEnfermedad(historial.getOrigenDeLaEnfermedad());
+                primerHistorial.setAntecedentesDeImportancia(historial.getAntecedentesDeImportancia());
+                primerHistorial.setObservaciones(historial.getObservaciones());
+                primerHistorial.setImpresionDiagnostica(historial.getImpresionDiagnostica());
+                primerHistorial.setValoracionEspecialista(historial.getValoracionEspecialista());
+                primerHistorial.setHistoriaDeEnfermedadActual(historial.getHistoriaDeEnfermedadActual());
+                primerHistorial.setFecha(historial.getFecha());
+                primerHistorial.setImagen(historial.getImagen());
+                usuarioService.updateHistorial(primerHistorial);
+                return "redirect:/historial/modificar/" + id ;
+            } else {
+                // Crear un nuevo historial
+                usuarioService.saveHistorial(historial); // Suponiendo que tienes un método para guardar un nuevo historial en el servicio
+                return "redirect:/historial/modificar/" + id ;
+            }
+        } catch (Exception e) {
+            // Aquí puedes manejar la excepción, por ejemplo, registrando un mensaje de error
+            // o redirigiendo a una página de error
+            // También puedes lanzar una excepción personalizada si lo prefieres
+            e.printStackTrace(); // Esto imprimirá la traza de la excepción en la consola
+            return "redirect:/error"; // Redirige a una página de error
+        }
+    }
+    @PostMapping("/observaciones/{id}")
+    public String CrearUsuarios(@PathVariable("id") int id, @ModelAttribute("observaciones") Observaciones observaciones){
+        LocalDateTime now = LocalDateTime.now();
+
+        // Define un formateador para el formato deseado
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+
+        // Formatea la fecha y hora actual en el formato deseado
+        String formattedDateTime = now.format(formatter);
+        observaciones.setIdCliente(id);
+        observaciones.setFecha(formattedDateTime);
+
+        usuarioService.saveObservacion(observaciones);
+        return "redirect:/historial/modificar/" + id ;
+    }
+    @GetMapping("/eliminarObservacion/{id}")
+    public String EliminarObservaciones(@PathVariable int id) {
+        usuarioService.deleteObservacion(id);
+        return "redirect:/historial/modificar/" + id ;
+    }
+    @PostMapping("/crear_historial/{id}")
+    public String CrearHistorial(@PathVariable int id,@ModelAttribute("historial") Historial historial){
+
+
+        usuarioService.saveHistorial(historial);
+        return "redirect:/historial/modificar/" + id;
+
+}}
